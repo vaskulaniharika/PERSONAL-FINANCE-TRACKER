@@ -1,0 +1,80 @@
+import csv
+from datetime import datetime
+
+FILENAME = 'transactions.csv'
+
+def load_transactions():
+    transactions = []
+    try:
+        with open(FILENAME, mode='r') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                transactions.append(row)
+    except FileNotFoundError:
+        pass
+    return transactions
+
+def save_transactions(transactions):
+    with open(FILENAME, mode='w', newline='') as file:
+        fieldnames = ['date', 'type', 'amount', 'category', 'description']
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        for t in transactions:
+            writer.writerow(t)
+
+def add_transaction(transactions, t_type):
+    amount = float(input(f"Enter {t_type} amount: "))
+    category = input("Enter category: ")
+    description = input("Enter description: ")
+    transaction = {
+        'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'type': t_type,
+        'amount': amount,
+        'category': category,
+        'description': description
+    }
+    transactions.append(transaction)
+    save_transactions(transactions)
+    print(f"{t_type.capitalize()} added successfully.")
+
+def view_transactions(transactions):
+    print("\nTransactions:")
+    for t in transactions:
+        print(f"{t['date']} | {t['type']} | {t['amount']} | {t['category']} | {t['description']}")
+    print()
+
+def view_balance(transactions):
+    income = sum(float(t['amount']) for t in transactions if t['type'] == 'income')
+    expense = sum(float(t['amount']) for t in transactions if t['type'] == 'expense')
+    print(f"\nTotal Income: {income}")
+    print(f"Total Expenses: {expense}")
+    print(f"Balance: {income - expense}\n")
+
+def main():
+    transactions = load_transactions()
+    
+    while True:
+        print("=== Personal Finance Tracker ===")
+        print("1. Add Income")
+        print("2. Add Expense")
+        print("3. View Transactions")
+        print("4. View Balance")
+        print("5. Exit")
+
+        choice = input("Choose an option: ")
+
+        if choice == '1':
+            add_transaction(transactions, 'income')
+        elif choice == '2':
+            add_transaction(transactions, 'expense')
+        elif choice == '3':
+            view_transactions(transactions)
+        elif choice == '4':
+            view_balance(transactions)
+        elif choice == '5':
+            print("Goodbye!")
+            break
+        else:
+            print("Invalid choice. Try again.")
+if __name__ == '__main__':
+    main()
